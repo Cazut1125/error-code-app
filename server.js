@@ -6,7 +6,7 @@
 
      // セッション設定
      app.use(session({
-       secret: gjidlcg68didpemnryu;23vYHp@top@r', // 安全なランダム文字列に変更
+       secret: process.env.SESSION_SECRET || 'a-secure-default-secret', // 環境変数から読み込む
        resave: false,
        saveUninitialized: false,
        cookie: { secure: process.env.NODE_ENV === 'production' } // HTTPSで必須
