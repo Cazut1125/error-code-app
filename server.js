@@ -13,11 +13,17 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // HTTPSで必須
+    secure: false, // HTTPSで必須
     httpOnly: true, // JavaScriptからのアクセスを禁止
-    sameSite: 'strict' // CSRF対策
+    sameSite: 'lax' // CSRF対策
   }
 }));
+
+// 追加するログ
+app.use((req, res, next) => {
+  console.log('Session cookie settings after app.use(session):', req.sessionOptions.cookie);
+  next();
+});
 
 // 簡易パスワード（本番ではデータベースや環境変数を使用）
 const correctPassword = 'Egaon2012'; // 適切に変更
