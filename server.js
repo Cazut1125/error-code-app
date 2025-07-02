@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path'); // この行を追加
 console.log('__dirname:', __dirname);
 console.log('path.join(__dirname, 'public'):', path.join(__dirname, 'public'));
 const session = require('express-session');
