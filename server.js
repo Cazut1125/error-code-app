@@ -1,4 +1,6 @@
 const express = require('express');
+console.log('__dirname:', __dirname);
+console.log('path.join(__dirname, 'public'):', path.join(__dirname, 'public'));
 const session = require('express-session');
 const path = require('path');
 const app = express();
