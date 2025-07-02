@@ -65,6 +65,7 @@ app.post('/login', (req, res) => {
 // 認証ミドルウェア
 // これ以降のルートは認証が必要
 app.use((req, res, next) => {
+  console.log('Session:', req.session); // セッションの状態をログに出力
   if (req.session.authenticated) {
     next();
   } else {
