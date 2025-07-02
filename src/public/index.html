@@ -1,0 +1,101 @@
+```html
+     <!DOCTYPE html>
+     <html lang="ja">
+     <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>釣銭機エラーコード検索</title>
+       <link rel="manifest" href="/manifest.json">
+       <meta name="apple-mobile-web-app-capable" content="yes">
+       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+       <script src="https://cdn.tailwindcss.com"></script>
+     </head>
+     <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+       <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+         <h1 class="text-2xl font-bold mb-4 text-center">釣銭機エラーコード検索</h1>
+         <select id="machineSelect" class="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+           <option value="">すべての機種</option>
+           <option value="IC-2X00">IC-2X00</option>
+           <option value="IC-3000">IC-3000</option>
+           <option value="2008D">2008D</option>
+           <option value="IC-1200">IC-1200</option>
+           <option value="2003SD">2003SD</option>
+           <option value="CC-1000">CC-1000</option>
+           <option value="CAST">CAST</option>
+         </select>
+         <input id="errorCodeInput" type="text" placeholder="エラーコード (例: 1E01 または 99-1234)" class="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+         <button onclick="searchErrorCode()" class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">検索</button>
+         <div id="result" class="mt-4 text-gray-700"></div>
+       </div>
+
+       <script>
+         let errorCodes = {};
+         fetch('/error_codes.json')
+           .then(res => res.json())
+           .then(data => errorCodes = data)
+           .catch(err => {
+             document.getElementById("result").innerHTML = "<p class='text-red-500'>データの読み込みに失敗しました</p>";
+             console.error('Error loading JSON:', err);
+           });
+
+         function searchErrorCode() {
+           const input = document.getElementById("errorCodeInput").value.trim().toUpperCase();
+           const selectedMachine = document.getElementById("machineSelect").value;
+           const resultDiv = document.getElementById("result");
+           resultDiv.innerHTML = "";
+
+           if (!input) {
+             resultDiv.innerHTML = "<p class='text-red-500'>エラーコードを入力してください</p>";
+             return;
+           }
+
+           let results = [];
+           const isCastCode = input.includes("-");
+           const machines = selectedMachine ? [selectedMachine] : Object.keys(errorCodes);
+
+           machines.forEach(machine => {
+             if (machine === "CAST" && isCastCode) {
+               const [mainCode, subCode] = input.split("-");
+               errorCodes[machine].forEach(item => {
+                 if (item.main_code === mainCode && item.sub_code === subCode) {
+                   results.push({ ...item, machine });
+                 }
+               });
+             } else if (machine !== "CAST" && !isCastCode) {
+               errorCodes[machine].forEach(item => {
+                 if (item.code === input) {
+                   results.push({ ...item, machine });
+                 }
+               });
+             }
+           });
+
+           if (results.length > 0) {
+             resultDiv.innerHTML = results.map(result => `
+               <div class="mb-4 p-4 bg-gray-50 rounded">
+                 <p><strong>機種:</strong> ${result.machine}</p>
+                 <p><strong>エラーコード:</strong> ${isCastCode ? `${result.main_code}-${result.sub_code}` : result.code}</p>
+                 <p><strong>画面表示:</strong> ${result.display || "-"}</p>
+                 <p><strong>内容:</strong> ${result.description}</p>
+                 <p><strong>復旧処理:</strong> ${result.solution || "-"}</p>
+                 <p><strong>備考:</strong> ${result.notes || "-"}</p>
+               </div>
+             `).join("");
+           } else {
+             resultDiv.innerHTML = "<p class='text-red-500'>該当するエラーコードが見つかりませんでした</p>";
+           }
+         }
+
+         document.getElementById("errorCodeInput").addEventListener("keypress", function(event) {
+           if (event.key === "Enter") {
+             searchErrorCode();
+           }
+         });
+
+         if ("serviceWorker" in navigator) {
+           navigator.serviceWorker.register("/sw.js").catch(err => console.error("Service Worker registration failed:", err));
+         }
+       </script>
+     </body>
+     </html>
+     ```
