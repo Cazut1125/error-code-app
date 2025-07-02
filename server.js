@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 
 // セッション設定
-app.use(session({
+const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'a-secure-default-secret', // 環境変数から読み込む
   resave: false,
   saveUninitialized: false,
@@ -17,13 +17,9 @@ app.use(session({
     httpOnly: true, // JavaScriptからのアクセスを禁止
     sameSite: 'lax' // CSRF対策
   }
-}));
-
-// 追加するログ
-app.use((req, res, next) => {
-  console.log('Session cookie settings after app.use(session):', req.sessionOptions.cookie);
-  next();
-});
+};
+console.log('Applying session config:', sessionConfig); // ここで設定オブジェクト自体をログに出力
+app.use(session(sessionConfig));
 
 // 簡易パスワード（本番ではデータベースや環境変数を使用）
 const correctPassword = 'Egaon2012'; // 適切に変更
